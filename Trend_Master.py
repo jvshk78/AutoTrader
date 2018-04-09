@@ -19,8 +19,8 @@ from threading import Thread
 
 api_key = "bo8zwjhads913zkl"
 api_secret = "gvx3ilgcmgd9kbope2ty7f4qffddwwwg"
-request_token = "DSDw9gA19tYJ4uNAhkFvDod7EbnnM0XA"
-access_token = "GnjjRzFHp2JcRvCK0VhbbLtUMd45kkux"
+request_token = "yGjNGyPMgBP8o3VPyUetCwvslGTp4ulQ"
+access_token = "UTx3bjrNNZhtF1VGCBjE1ck2ktvAL2kL"
 kite = KiteConnect(api_key=api_key)
 #data = kite.generate_session(request_token, api_secret)
 #access_token=data['access_token']
@@ -63,6 +63,9 @@ def on_ticks(ws, ticks):
 def on_connect(ws, response):
     ws.subscribe(c1.token)
     ws.set_mode(ws.MODE_LTP, c1.token)
+
+def on_close():
+    kws.close()
 
 
 class orders :
@@ -146,10 +149,11 @@ class algos :
 alg=algos
 
 kws.on_connect = on_connect
-
 kws.on_ticks = on_ticks
+kws.on_close=on_close()
 
+kws.connect()
 
-t1 = Thread(target=kws.connect)
-t1.start()
+#t1 = Thread(target=kws.connect)
+#t1.start()
 
