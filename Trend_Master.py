@@ -60,8 +60,6 @@ def on_ticks(ws, ticks):
     alg.algo_sl_adjust()
     alg.algo_trade_change()
 
-
-
 def on_connect(ws, response):
     ws.subscribe(c1.token)
     ws.set_mode(ws.MODE_LTP, c1.token)
