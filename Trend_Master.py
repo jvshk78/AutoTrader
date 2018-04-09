@@ -54,11 +54,11 @@ def on_ticks(ws, ticks):
 
     c1.tc = c1.tc + 1
     c1.ltp = ticks[0]["last_price"]
-    print("Ticking....LTP", c1.ltp)
     if (c1.tc==0):
         alg.algo_init_trade()
     alg.algo_sl_adjust()
     alg.algo_trade_change()
+    print("Ticking....LTP", c1.ltp)
 
 def on_connect(ws, response):
     ws.subscribe(c1.token)
