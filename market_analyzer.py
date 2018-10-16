@@ -35,20 +35,28 @@ logging.basicConfig(level=logging.DEBUG)
 # Initialise
 kws = KiteTicker(api_key, access_token)
 
+#plt.ion()
+fig,ax1=plt.subplots(3,2)
+ax1[0,0].set_title('Volume')
+ax1[1,0].set_title("OI")
+ax1[0,1].set_title("LTP")
+
 def on_ticks(ws, ticks):
     # Callback to receive ticks.
     #logging.debug("Ticks: {}".format(ticks))
     #print(ticks)
     #print(len(ticks))
     var.tc=var.tc+1
-    if var.tc>=10000:
+    if var.tc>=1000:
         var.a.clear()
         var.b.clear()
         var.c.clear()
         var.tc=0
-        plt.clf()
+        plt.close()
 
-    plt.ion()
+
+
+
     for i in range(len(ticks)):
 
         if(ticks[i]['instrument_token']== var.inst[0]):
@@ -56,26 +64,19 @@ def on_ticks(ws, ticks):
         #elif(ticks[i]['instrument_token']== 14518018):
             var.b.append(ticks[i]['oi'])
             var.c.append(ticks[i]['last_price'])
-        print("call",var.a)
-        print("put",var.b)
-        print(var.c)
 
-        plt.subplot(311)
-        #plt.title("Call Volume")
-        plt.plot(var.a)
+        ax1[0,0].plot(var.a)
         plt.pause(0.01)
 
-        plt.subplot(312)
-        #plt.title("CALL OI")
-        plt.plot(var.b)
+        ax1[1,0].plot(var.b)
         plt.pause(0.01)
 
-        plt.subplot(313)
-        plt.plot(var.c)
-       #plt.title("CALL price")
+        ax1[0,1].plot(var.c)
         plt.pause(0.01)
+
 
     plt.show()
+
 
 def on_connect(ws, response):
     # Callback on successful connect.
@@ -88,9 +89,10 @@ def on_close(ws, code, reason):
     ws.stop()
 
 # Assign the callbacks.
+plt.ion()
 kws.on_ticks = on_ticks
 kws.on_connect = on_connect
-kws.on_close = on_close
+#kws.on_close = on_close
 
 # Infinite loop on the main thread. Nothing after this will run.
 # You have to use the pre-defined callbacks to manage subscriptions.
