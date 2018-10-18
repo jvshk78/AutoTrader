@@ -1,0 +1,40 @@
+from kiteconnect import KiteConnect
+api_key='d1zkjgaordrrjgis'
+api_secret='owe9bi50r9f8lr71jvvqesm5m86p1emf'
+request_token='gkyxEHAbctrEVO6BK877IyrpkqlTvFvh'
+access_token='u2ors4kbbiFJO39Ja7QdP3v3ivFh5KaS'
+public_token= '9cWznMIN1s5Nr7ZrqpnzVAvAUsbvlYfx'
+kite=KiteConnect(api_key=api_key)
+
+kite.set_access_token(access_token)
+
+ltp_nifty50=10580 #kite.ltp(256265)['256265']['last_price']
+ltp_niftybank=25580  #kite.ltp(260105)['260105']['last_price']
+print(ltp_nifty50,ltp_niftybank)
+
+
+strike_nifty50=100*int(ltp_nifty50/100)-400
+strike_niftybank=100*int(ltp_niftybank/100)-400
+print(strike_nifty50,strike_niftybank)
+n50optcall=[]
+n50optput=[]
+nbankoptcall=[]
+nbankoptput=[]
+
+symbols_codes={}
+
+#symbols_codes.update({"NIFTY18OCT"+str(strike_nifty50-(100*(5-i)))+"CE":[]})
+
+for i in range(9):
+
+
+    n50optcall.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"CE")
+    n50optput.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"PE")
+    nbankoptcall.append("BANKNIFTY17OCT18"+str(strike_niftybank+(100*i))+"CE")
+    nbankoptput.append("BANKNIFTY17OCT18"+str(strike_niftybank+(100*i))+"PE")
+
+
+print(n50optcall,n50optput)
+print(nbankoptcall,nbankoptput)
+
+
