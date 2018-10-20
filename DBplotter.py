@@ -1,78 +1,125 @@
 import sqlite3
 from matplotlib import pyplot as plt
 import time
-#from data_logger import symbols
 
+conn = sqlite3.connect('inst6.db')
+cur=conn.cursor()
+data=[]
+symbols=[]
 
 ltp_nifty50=10443.95#kite.ltp(256265)['256265']['last_price']
 ltp_niftybank=25177#kite.ltp(260105)['260105']['last_price']
-strike_nifty50=100*int(ltp_nifty50/100)-400
+
+#strike_nifty50=100*int(ltp_nifty50/100)-200
 strike_niftybank=100*int(ltp_niftybank/100)-400
 
-symbols=[]
-for i in range(9):
-    symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"CE")
-    symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"PE")
-    symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"CE")
-    symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"PE")
+
+#for i in range(4):
+    #symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"CE")
+    #symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"PE")
+    #symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"CE")
+    #symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"PE")
+
+#symbols.append("NIFTY18OCTFUT")
+#symbols.append("BANKNIFTY18OCTFUT")
+#symbols.append("BANKNIFTY18OCT25400PE")
+symbols.append("BANKNIFTY18OCT25400CE")
 
 
-#st=["NIFTY18OCT10000CE","NIFTY18OCT10100PE","NIFTY18OCT10200PE","NIFTY18OCT10300PE","NIFTY18OCT10400PE","NIFTY18OCT10500PE","NIFTY18OCT10600PE","NIFTY18OCT10500PE","NIFTY18OCT10500PE","NIFTY18OCT10500PE",]
-data=[]
-ltp=[]
-oi=[]
-vol=[]
-buyq=[]
-sellq=[]
-ltq=[]
-d={}
-conn = sqlite3.connect('inst6.db')
-cur=conn.cursor()
-for i in range(len(symbols)):
-    cur.execute("select * from " + symbols[i])
-    data=cur.fetchall()
-    d.update({symbols[i]:data})
+val={}
 
-i=0
-for i in range(len(data)):
-    ltp.append(data[i][1])
-    oi.append(data[i][2])
-    vol.append(data[i][3])
-    buyq.append(data[i][4])
-    sellq.append(data[i][5])
-    ltq.append(data[i][6])
-plt.ion()
-plt.subplot(511)
-plt.suptitle(symbols[5])
-plt.plot(ltp)
-plt.title("ltp ")
-plt.ylabel(str(data[i][1]))
 
-plt.subplot(512)
-plt.plot(oi)
-plt.title("oi ")
-plt.ylabel(str(data[i][2]))
+#print(symbols)
+for j in range(len(symbols)):
+    cur.execute("select * from " + symbols[j]+" limit 2000")
+    data = cur.fetchall()
+    val.update({symbols[j]: {'ltp': [], 'oi': [], 'vol': [], 'bq': [], 'sq': [], 'ltq': []}})
+    for i in range(len(data)):
+        val[symbols[j]]['ltp'].append(data[i][1])
+        val[symbols[j]]['oi'].append(data[i][2])
+        val[symbols[j]]['vol'].append(data[i][3])
+        val[symbols[j]]['bq'].append(data[i][4])
+        val[symbols[j]]['sq'].append(data[i][5])
+        val[symbols[j]]['ltq'].append(data[i][6])
+print(val)
 
-#plt.subplot(613)
-#plt.plot(vol)
-#plt.title("vol")
+class plots():
+    def p1():
+        for k in val:
+            plt.subplot(511)
+            plt.plot(val[k]['ltp'],label='ltp')
+            plt.legend()
 
-plt.subplot(513)
-plt.plot(buyq)
-plt.title("bq ")
-plt.ylabel(str(data[i][4]))
 
-plt.subplot(514)
-plt.plot(sellq)
-plt.title("sq ")
-plt.ylabel(str(data[i][5]))
-plt.subplot(515)
-plt.plot(ltq)
-plt.title("ltq ")
-plt.ylabel(str(data[i][6]))
-plt.pause(0.1)
+        for k in val:
+            plt.subplot(512)
+            plt.plot(val[k]['oi'],label='oi')
+            plt.legend()
 
-plt.show(block=True)
-print(d)
 
+        for k in val:
+            plt.subplot(513)
+            plt.plot(val[k]['bq'],label='bq')
+            plt.legend()
+
+
+        for k in val:
+            plt.subplot(514)
+            plt.plot(val[k]['sq'],label='sq')
+            plt.legend()
+
+
+        for k in val:
+            plt.subplot(515)
+            plt.plot(val[k]['ltq'],label='ltq')
+            plt.legend()
+        plt.suptitle(k)
+        plt.show()
+
+    def p2():
+        for k in val:
+            plt.subplot(511)
+            plt.plot(val[k]['ltp'],label='ltp')
+            plt.legend()
+
+
+        for k in val:
+            plt.subplot(512)
+            plt.plot(val[k]['oi'],label='oi')
+            plt.legend()
+
+
+        for k in val:
+            plt.subplot(513)
+            plt.plot(val[k]['bq'],label='bq')
+            plt.legend()
+
+
+        for k in val:
+            plt.subplot(514)
+            plt.plot(val[k]['sq'],label='sq')
+            plt.legend()
+
+
+        for k in val:
+            plt.subplot(515)
+            plt.plot(val[k]['ltq'],label='ltq')
+            plt.legend()
+        plt.suptitle(k)
+        plt.show()
+
+plots.p1()
+#fig,ax=plt.subplots(2,2,num=10, clear=True)
+"""""
+ax2=plt.plot(val['NIFTY18OCTFUT']['ltp'])
+plt.show()
+ax3=plt.plot(val['NIFTY18OCTFUT']['vol'])
+plt.show()
+ax4=plt.plot(val['NIFTY18OCTFUT']['bq'])
+plt.show()
+ax5=plt.plot(val['NIFTY18OCTFUT']['sq'])
+plt.show()
+ax6=plt.plot(val['NIFTY18OCTFUT']['ltq'])
+plt.show()
+"""""
 
