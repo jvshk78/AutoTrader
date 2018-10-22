@@ -7,23 +7,24 @@ import sqlite3
 
 api_key='d1zkjgaordrrjgis'
 api_secret='owe9bi50r9f8lr71jvvqesm5m86p1emf'
-request_token='dbKPPnGGwAhfDqxmR4LxDGKO8nYCdCq1'
-access_token='StMbcnM2Ya8OBfFnQsgSuuG0pfFpiQAN'
-public_token= 'MfurE0Mk3exQqf2csdbcDK0apzPyogaf'
+request_token='qFPiwkSRx3sB7ii6EikmTeyLZOVBOPNK'
+
 kite=KiteConnect(api_key=api_key)
 
 #print(kite.login_url())
-#data = kite.generate_session(request_token, api_secret=api_secret)
+data = kite.generate_session(request_token, api_secret=api_secret)
+access_token=data['access_token']
+public_token= data['public_token']
 kite.set_access_token(access_token)
 #print(data)
 
 #print(kite.ltp(12438530))
 #print(kite.ltp(256265))
-#inst=kite.instruments('NFO')
+inst=kite.instruments('NFO')
 
 ############################################DATABASE OPERATIONS##################################################
 ltp_nifty50=10443.95#kite.ltp(256265)['256265']['last_price']
-ltp_niftybank=25188#kite.ltp(260105)['260105']['last_price']
+ltp_niftybank=25177#kite.ltp(260105)['260105']['last_price']
 
 strike_nifty50=100*int(ltp_nifty50/100)-400
 strike_niftybank=100*int(ltp_niftybank/100)-400
@@ -52,16 +53,17 @@ for i in range(len(inst)):
         if inst[i]['tradingsymbol']==symbols[j]:
             symbols_codes.update({inst[i]['tradingsymbol']:{'tradingsymbol':inst[i]['tradingsymbol'],'instrument_token':inst[i]['instrument_token'],'last_price':[],'oi':[],'vol':[],'buy_quantity':[],'sell_quantity':[],'ltq':[]}})
             symbol_tokens.append(inst[i]['instrument_token'])
-
+symbol_tokens.append(256265)
+symbol_tokens.append(260105)
 #print(symbols)
 #print(symbols_codes)
 
 
-conn=sqlite3.connect('inst6.db')
+conn=sqlite3.connect('inst7.db')
 for key in symbols_codes:
     conn.execute("create table if not exists " + key + " (instrument_token int not null,last_price int not null,oi int not null,vol int not null,buy_quantity int not null,sell_quantity int not null,ltq int not null)")
 
-conn.execute("create table if not exists indx(nifty50 int not null,banknifty int not null)")
+conn.execute("create table if not exists indx (nifty50 int ,banknifty int )")
 conn.commit()
 
 ##############################################################################################################################
@@ -87,6 +89,7 @@ kws = KiteTicker(api_key, access_token)
 
 
 def on_ticks(ws,data):
+    var.tc=var.tc+1
     var.ticks=data
     # Callback to receive ticks.
     #logging.debug("Ticks: {}".format(data))
@@ -136,14 +139,17 @@ class plotter(Thread):
         for key in symbols_codes:
             for j in range(len(var.ticks)):
                 if (var.ticks[j]['instrument_token'] == symbols_codes[key]['instrument_token']):
-                    conn.execute("insert into " + key + "(instrument_token ,last_price ,oi ,vol ,buy_quantity ,sell_quantity,ltq) values(?,?,?,?,?,?,?)",
+                    conn.execute("insert into " + key + " (instrument_token ,last_price ,oi ,vol ,buy_quantity ,sell_quantity,ltq) values(?,?,?,?,?,?,?)",
                         (var.ticks[j]['instrument_token'],var.ticks[j]['last_price'],var.ticks[j]['oi'],var.ticks[j]['volume'],var.ticks[j]['buy_quantity'],var.ticks[j]['sell_quantity'],var.ticks[j]['last_quantity']))
                 if (var.ticks[j]['instrument_token']==256265):
-                    conn.execute("insert into indx (nifty50) values(?)",(var.ticks[j]['last_price']))
+                    conn.execute("insert into indx (nifty50) values(?) ", (var.ticks[j]['last_price'],))
                 if(var.ticks[j]['instrument_token']==260105):
-                    conn.execute("insert into indx (banknifty) values(?)", (var.ticks[j]['last_price']))
+                    conn.execute("insert into indx (banknifty) values(?)", (var.ticks[j]['last_price'],))
                 conn.commit()
-                #print(var.ticks)
+               # print(var.ticks,var.tc)
+
+
+
 
 
 
