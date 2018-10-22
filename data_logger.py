@@ -7,7 +7,7 @@ import sqlite3
 
 api_key='d1zkjgaordrrjgis'
 api_secret='owe9bi50r9f8lr71jvvqesm5m86p1emf'
-request_token='qFPiwkSRx3sB7ii6EikmTeyLZOVBOPNK'
+request_token='VFmOuUqZ1LbgfQPYUMAVlSXPYBtPRn57'
 
 kite=KiteConnect(api_key=api_key)
 
@@ -20,7 +20,7 @@ kite.set_access_token(access_token)
 
 #print(kite.ltp(12438530))
 #print(kite.ltp(256265))
-inst=kite.instruments('NFO')
+inst=kite.instruments()
 
 ############################################DATABASE OPERATIONS##################################################
 ltp_nifty50=10443.95#kite.ltp(256265)['256265']['last_price']
@@ -35,19 +35,20 @@ symbols_codes={}
 symbols=[]
 symbol_tokens=[]
 
-for i in range(9):
-    symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"CE")
-    symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"PE")
-    symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"CE")
-    symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"PE")
+#for i in range(9):
+#    symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"CE")
+ #   symbols.append("NIFTY18OCT"+str(strike_nifty50+(100*i))+"PE")
+ #   symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"CE")
+ #   symbols.append("BANKNIFTY18OCT"+str(strike_niftybank+(100*i))+"PE")
 
 
 symbols.append("NIFTY18OCTFUT")
 symbols.append("BANKNIFTY18OCTFUT")
+symbols.append("CRUDEOIL18NOVFUT")
+symbols.append("USDINR18OCTFUT")
 
 
-
-inst=kite.instruments('NFO')
+inst=kite.instruments()
 for i in range(len(inst)):
     for j in range(len(symbols)):
         if inst[i]['tradingsymbol']==symbols[j]:
@@ -59,7 +60,7 @@ symbol_tokens.append(260105)
 #print(symbols_codes)
 
 
-conn=sqlite3.connect('inst7.db')
+conn=sqlite3.connect('inst9.db')
 for key in symbols_codes:
     conn.execute("create table if not exists " + key + " (instrument_token int not null,last_price int not null,oi int not null,vol int not null,buy_quantity int not null,sell_quantity int not null,ltq int not null)")
 
