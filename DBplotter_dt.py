@@ -126,12 +126,13 @@ class plots():
         for i in val:
             k=1
             for j in val[i]:
-                ax = f.add_subplot(7,1,k)
-                ax.plot(val[i]['dt'],val[i][j])
-                #ax.suptitle(i)
-                #ax.ylabel(j)
-                k=k+1
-                #cursor=Cursor(useblit=True)
+                if j!='dt':
+                    ax = f.add_subplot(6,1,k)
+                    ax.plot(val[i]['dt'],val[i][j])
+                    #ax.suptitle(i)
+                    #ax.ylabel(j)
+                    k=k+1
+                    #cursor=Cursor(useblit=True)
             ax.xaxis.set_major_formatter(formatter)
             plt.show()
 
