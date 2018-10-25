@@ -1,6 +1,9 @@
 import sqlite3
 from matplotlib import pyplot as plt
+from matplotlib.dates import datetime as dt
+from matplotlib.dates import DateFormatter
 import time
+formatter = DateFormatter('%H-%M')
 
 conn = sqlite3.connect('25_10_18.2.db')
 cur=conn.cursor()
@@ -34,15 +37,15 @@ val_0={}
 #print(symbols)
 
 for j in range(len(symbols)):
-    cur.execute("delete from " + symbols[j] + " where ltq=0 or oi=0 or vol=0 or last_price=0 or sell_quantity=0 or buy_quantity=0")
-    cur.execute("select * from " + symbols[j] +" limit 5")
+    #cur.execute("delete from " + symbols[j] + " where ltq=0 or oi=0 or vol=0 or last_price=0 or sell_quantity=0 or buy_quantity=0")
+    cur.execute("select * from " + symbols[j])# +" limit 5")
     data = cur.fetchall()
     val.update({symbols[j]: {'dt':[],'ltp': [], 'oi': [], 'vol': [], 'bq': [], 'sq': [], 'ltq': []}})
     val_p.update({symbols[j]: {'dt':[],'ltp': [], 'oi': [], 'vol': [], 'bq': [], 'sq': [], 'ltq': []}})
     val_0.update({symbols[j]: {'dt':[],'ltp': [], 'oi': [], 'vol': [], 'bq': [], 'sq': [], 'ltq': []}})
 
     for i in range(len(data)):
-        val[symbols[j]]['dt'].append(data[i][0])
+        val[symbols[j]]['dt'].append(dt.datetime.strptime(data[i][0], '%Y-%m-%d %H:%M:%S'))
         val[symbols[j]]['ltp'].append(data[i][1])
         val[symbols[j]]['oi'].append(data[i][2])
         val[symbols[j]]['vol'].append(data[i][3])
@@ -117,18 +120,19 @@ class plots():
         plt.show()
 
 
-
     def p2():
+        f = plt.figure()
         k=0
         for i in val:
             k=1
             for j in val[i]:
-                plt.subplot(7,1,k)
-                plt.plot(val[i]['dt'],val[i][j])
-                plt.suptitle(i)
-                plt.ylabel(j)
+                ax = f.add_subplot(7,1,k)
+                ax.plot(val[i]['dt'],val[i][j])
+                #ax.suptitle(i)
+                #ax.ylabel(j)
                 k=k+1
                 #cursor=Cursor(useblit=True)
+            ax.xaxis.set_major_formatter(formatter)
             plt.show()
 
 
