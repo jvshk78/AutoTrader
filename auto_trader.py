@@ -1,103 +1,149 @@
-import sqlite3
-from matplotlib import pyplot as plt
+from kiteconnect import KiteConnect
+from kiteconnect import KiteTicker
+import logging
+from threading import Thread
 
 
-conn = sqlite3.connect('01_11_18.db')
-cur=conn.cursor()
-data=[]
-symbols=[]
-symbols2=['USDINR18NOVFUT']
-#symbols2=['TATAMOTORS','IOC','SBIN','YESBANK','BANKNIFTY18NOVFUT','CRUDEOIL18NOVFUT','GOLDM18NOVFUT','USDINR18NOVFUT','NIFTY18NOVFUT','NIFTY18NOV10100CE','NIFTY18NOV10100PE','BANKNIFTY18NOV24700CE','BANKNIFTY18NOV24700PE']
 
-symbols=symbols2
+api_key='d1zkjgaordrrjgis'
+api_secret='owe9bi50r9f8lr71jvvqesm5m86p1emf'
+request_token='lqfYs6J6p0c20VMBclQpU6pTqcvwdYmw'
+access_token='voCwJRPb23mnR40GQBmtfxLdQbloWLM7'
+public_token='pKLouATY1Ct2qFNZSCCVLdVNU9o1xJz5'
+kite=KiteConnect(api_key=api_key)
 
-val={}
-
-for j in range(len(symbols)):
-    #cur.execute("delete from " + symbols[j] + " where ltq=0 or vol=0 or oi=0 or last_price=0 or sell_quantity=0 or buy_quantity=0")
-    #cur.execute("select last_price from " + symbols[j])# +" limit 10000")
-    cur.execute("select last_price,oi,vol from " + symbols[j])# +" limit 5000")
-    data = cur.fetchall()
-    val.update({symbols[j]: {'ltp': [],'oi':[],'vol':[],'ltp_dir':[],'oi_dir':[],'vol_dir':[]}})
+#print(kite.login_url())
+#https://kite.trade/connect/login?api_key=d1zkjgaordrrjgis&v=3
+data = kite.generate_session(request_token, api_secret=api_secret)
+access_token=data['access_token']
+public_token= data['public_token']
+kite.set_access_token(access_token)
 
 
-    pdiff=data[0][0]
-    oidiff=data[0][1]
-    vdiff=data[0][2]
-    vvdiff=0
-
-    p_diff=[]
-    oi_diff=[]
-    v_diff=[]
-
-    h1=0
-    h2=0
-    h3=0
+inst=kite.instruments('MCX')
 
 
-    for i in range(len(data)):
-
-        p_diff.append(data[i][0]-pdiff)
-        oi_diff.append(data[i][1]-oidiff)
-        v_diff.append(data[i][2]-vdiff)
 
 
-        val[symbols[j]]['ltp'].append(data[i][0])
-        val[symbols[j]]['ltp_dir'].append((h1))
+symbols_codes={}
+symbols=["CRUDEOIL18NOVFUT"]
+symbol_tokens=[]
 
-        if p_diff[i]!=0:
-            s=abs(p_diff[i])/p_diff[i]
-            h1=h1+s
-
-        pdiff = data[i][0]
-
-
-        val[symbols[j]]['oi'].append(data[i][1])
-        val[symbols[j]]['oi_dir'].append((h2))
-
-        if oi_diff[i]!=0:
-            s=abs(oi_diff[i])/oi_diff[i]
-            h2=h2+s
-
-        oidiff = data[i][1]
-
-        val[symbols[j]]['vol'].append(v_diff[i])
-        val[symbols[j]]['vol_dir'].append((h3))
-
-        if v_diff[i] > vvdiff:
-            h3 = h3 + 1
-        elif v_diff[i] < vvdiff:
-            h3 = h3 -1
-
-        vvdiff=v_diff[i]
-        vdiff = data[i][2]
-
-    """""
-    plt.plot(val[symbols[j]]['ltp_dir'],label='pdiff')
-    plt.plot(val[symbols[j]]['oi_dir'],label='oidiff')
-    plt.legend()
-    plt.show()
-    """""
-
-conn.commit()
-conn.close()
-
-class plots():
-     def p2():
-
-        for i in val:
-            k=1
-            for j in val[i]:
-                plt.subplot(6,1,k)
-                plt.plot(val[i][j])
-                plt.suptitle(i)
-                plt.ylabel(j)
-                k=k+1
-                #cursor=Cursor(useblit=True)
-            plt.show()
+for i in range(len(inst)):
+    for j in range(len(symbols)):
+        if inst[i]['tradingsymbol']==symbols[j]:
+            symbols_codes.update({inst[i]['tradingsymbol']:{'tradingsymbol':inst[i]['tradingsymbol'],'instrument_token':inst[i]['instrument_token'],'last_price':[],'oi':[],'vol':[],'buy_quantity':[],'sell_quantity':[],'ltq':[]}})
+            symbol_tokens.append(inst[i]['instrument_token'])
 
 
-plots.p2()
-plt.show()
+
+
+
+
+##############################################TICKER###################################################
+
+
+class var():
+    ts=0
+    ticks={}
+    ltp=0
+    ltp_prev=0
+    ltp_diff=0
+    ltp_dir=0
+    order_id=0
+    tpb=10
+    tps=-10
+
+
+class trade_sniffer(Thread):
+
+    def __init__(self):
+        Thread.__init__(self)
+        print('TI')
+
+    def run(self):
+        var.ltp = var.ticks[0]['last_price']
+        print('TR')
+        if var.ltp_diff!=0:
+            var.ltp_dir=var.ltp_dir + abs(var.ltp_diff)/var.ltp_diff
+
+
+
+        if var.ltp_dir>=var.tpb and var.ts==0:
+            var.order_id = kite.place_order(variety=kite.VARIETY_CO, exchange=kite.EXCHANGE_MCX,
+                                        tradingsymbol="CRUDEOILM18NOVFUT",
+                                        transaction_type=kite.TRANSACTION_TYPE_BUY,
+                                        quantity=5, product=kite.PRODUCT_CO,
+                                        order_type=kite.ORDER_TYPE_MARKET,
+                                        trigger_price=var.ticks[0]['last_price'] - 45,
+                                        stoploss=var.ticks[0]['last_price'] - 50)
+            var.ts=1
+        elif var.ltp_dir<=var.tps and var.ts==0:
+            var.order_id = kite.place_order(variety=kite.VARIETY_CO, exchange=kite.EXCHANGE_MCX,
+                                        tradingsymbol="CRUDEOILM18NOVFUT",
+                                        transaction_type=kite.TRANSACTION_TYPE_SELL,
+                                        quantity=5, product=kite.PRODUCT_CO,
+                                        order_type=kite.ORDER_TYPE_MARKET,
+                                        trigger_price=var.ticks[0]['last_price'] + 45,
+                                        stoploss=var.ticks[0]['last_price'] + 50)
+            var.ts=1
+        elif var.ts==1 and var.ltp_dir>=var.tpb+5:
+            kite.cancel_order(variety=kite.VARIETY_CO,order_id=var.order_id)
+            var.tpb=var.ltp_dir+10
+            var.tps = var.ltp_dir - 10
+            var.ts=0
+
+
+        elif var.ts == 1 and var.ltp_dir <= var.tps-5:
+            kite.cancel_order(variety=kite.VARIETY_CO, order_id=var.order_id)
+            var.ts=0
+            var.tps=var.ltp_dir-10
+            var.tpb = var.ltp_dir+10
+
+
+        var.ltp_diff = (var.ltp - var.ltp_prev)
+        var.ltp_prev = var.ticks[0]['last_price']
+
+        print("ltp,ltp_prev,ltp_diff,ltp_dir",var.ltp,var.ltp_prev,var.ltp_diff,var.ltp_dir)
+
+
+
+
+
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Initialise
+kws = KiteTicker(api_key, access_token)
+
+
+
+def on_ticks(ws,ticks):
+    var.ticks=ticks
+    t1.run()
+
+
+def on_connect(ws, response):
+    # Callback on successful connect.
+     ws.subscribe(symbol_tokens)
+     ws.set_mode(ws.MODE_LTP, symbol_tokens)
+
+
+def on_order_update(ws,data):
+    print('ORDER_UPDATE :',data['status_message'])
+
+def on_close(ws, code, reason):
+    ws.stop()
+
+t1=trade_sniffer()
+kws.on_ticks = on_ticks
+kws.on_connect = on_connect
+kws.on_order_update=on_order_update
+kws.on_close = on_close
+
+
+kws.connect()
+
+
 
 
