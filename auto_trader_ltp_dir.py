@@ -69,7 +69,7 @@ class trade_sniffer(Thread):
             var.ltp_dir=var.ltp_dir + abs(var.ltp_diff)/var.ltp_diff
 
 
-#####################################BUY#############################################################
+
         if var.ltp_dir>=var.tpb and var.ts==0:
             var.order_id = kite.place_order(variety=kite.VARIETY_CO, exchange=kite.EXCHANGE_MCX,
                                         tradingsymbol="CRUDEOIL18NOVFUT",
@@ -82,8 +82,6 @@ class trade_sniffer(Thread):
             var.ts=1
             var.tpb = var.ltp_dir
             var.tps = var.ltp_dir
-
-#####################################SELL#############################################################
         elif var.ltp_dir<=var.tps and var.ts==0:
             var.order_id = kite.place_order(variety=kite.VARIETY_CO, exchange=kite.EXCHANGE_MCX,
                                         tradingsymbol="CRUDEOIL18NOVFUT",
@@ -93,20 +91,17 @@ class trade_sniffer(Thread):
                                         trigger_price=var.ticks[0]['last_price'] + 15,
                                         stoploss=var.ticks[0]['last_price'] + 20)
             var.tp = var.ltp
-            var.ts=-1
+            var.ts=1
             var.tpb = var.ltp_dir
             var.tps = var.ltp_dir
-
-#####################################BUY CLOSE#############################################################
-        elif var.ts==1 and var.ltp >= var.tp+4:
+        elif var.ts==1 and var.ltp_dir>=var.tpb+10:
             kite.cancel_order(variety=kite.VARIETY_CO,order_id=var.order_id)
             var.tpb=var.ltp_dir+10
-            var.tps = var.ltp_dir-10
+            var.tps = var.ltp_dir - 10
             var.ts=0
 
-#####################################SELL CLOSE#############################################################
 
-        elif var.ts == -1 and var.ltp <= var.tp-4:
+        elif var.ts == 1 and var.ltp_dir <= var.tps-10:
             kite.cancel_order(variety=kite.VARIETY_CO, order_id=var.order_id)
             var.ts=0
             var.tps=var.ltp_dir-10
